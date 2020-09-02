@@ -15,6 +15,7 @@ namespace WebApi.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Nome = table.Column<string>(nullable: true),
                     Sobrenome = table.Column<string>(nullable: true),
+                    Email = table.Column<string>(nullable: true),
                     Telefone = table.Column<string>(nullable: true),
                     Aniversario = table.Column<DateTime>(nullable: false)
                 },

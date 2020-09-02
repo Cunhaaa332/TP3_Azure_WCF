@@ -19,7 +19,7 @@ namespace WebApi.Controllers {
         // GET: api/Amigos
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Amigo>>> GetAmigo() {
-            return await _context.Amigo.ToListAsync();
+            return await _context.Amigo.FromSqlRaw("exec BuscarAmigos").ToListAsync();
         }
 
         // GET: api/Amigos/5
@@ -43,10 +43,11 @@ namespace WebApi.Controllers {
                 return BadRequest();
             }
 
-            _context.Entry(amigo).State = EntityState.Modified;
 
             try {
-                await _context.SaveChangesAsync();
+                await _context.Database.ExecuteSqlInterpolatedAsync(
+                $"exec EditarAmigo {id}, {amigo.Nome}, {amigo.Sobrenome}, {amigo.Email}, {amigo.Telefone}, {amigo.Aniversario}");
+
             } catch (DbUpdateConcurrencyException) {
                 if (!AmigoExists(id)) {
                     return NotFound();
@@ -63,8 +64,9 @@ namespace WebApi.Controllers {
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPost]
         public async Task<ActionResult<Amigo>> PostAmigo(Amigo amigo) {
-            _context.Amigo.Add(amigo);
-            await _context.SaveChangesAsync();
+
+            await _context.Database.ExecuteSqlInterpolatedAsync(
+                $"exec AdicionarAmigo {amigo.Nome}, {amigo.Sobrenome}, {amigo.Email}, {amigo.Telefone}, {amigo.Aniversario}");
 
             return CreatedAtAction("GetAmigo", new { id = amigo.Id }, amigo);
         }
@@ -77,8 +79,7 @@ namespace WebApi.Controllers {
                 return NotFound();
             }
 
-            _context.Amigo.Remove(amigo);
-            await _context.SaveChangesAsync();
+           await _context.Database.ExecuteSqlInterpolatedAsync($"exec DeletarAmigo {id}");
 
             return amigo;
         }
